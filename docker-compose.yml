@@ -1,0 +1,23 @@
+version: '2'
+
+services:
+    consul:
+        image: consul
+        command: agent -ui -server -bootstrap
+
+    container-exporter:
+        image: prom/container-exporter
+        volumes:
+            - /sys/fs/cgroup:/cgroup
+            - /var/run/docker.sock:/var/run/docker.sock
+    prometheus:
+        image: prom/prometheus
+        volumes:
+            - ./data/config/prometheus.yml:/etc/prometheus/prometheus.yml
+            - ./data/store:/prometheus
+
+    prometheus-consul:
+        image: consul
+        command: agent -join consul
+        network_mode: "service:prometheus"
+
