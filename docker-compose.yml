@@ -3,21 +3,35 @@ version: '2'
 services:
     consul:
         image: consul
-        command: agent -ui -server -bootstrap
+        command: agent -ui -server -bootstrap -client 0.0.0.0
 
     container-exporter:
         image: prom/container-exporter
         volumes:
             - /sys/fs/cgroup:/cgroup
             - /var/run/docker.sock:/var/run/docker.sock
+
     prometheus:
         image: prom/prometheus
         volumes:
-            - ./data/config/prometheus.yml:/etc/prometheus/prometheus.yml
-            - ./data/store:/prometheus
+            - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+            - ./config/alert.rules:/etc/prometheus/alert.rules
+            - ./store:/prometheus.store
 
-    prometheus-consul:
-        image: consul
-        command: agent -join consul
-        network_mode: "service:prometheus"
+    consul-exporter:
+        image: prom/consul-exporter
+        command: -consul.server=consul:8500
+
+    node-exporter:
+        image: prom/node-exporter
+#        network_mode: "host"
+        privileged: true
+    grafana:
+        image: grafana/grafana
+        volumes:
+            - ./data/grafana:/var/lib/grafana
+        environment:
+            - GF_SECURITY_ADMIN_PASSWORD=secret
+
+
 

@@ -1,0 +1,9 @@
+#ALERT container_number
+#	IF container_last_seen > 11
+#
+ALERT ConsulUnreachable
+	IF consul_up != 1
+	LABELS { severity = "pager" }
+	ANNOTATIONS {
+		summary = "Consul down",
+		description = "consul_up is not responding 1" }
